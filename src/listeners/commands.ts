@@ -7,10 +7,10 @@ export async function handleCommandDiscord(bot: Bot) {
 
     const user = bot.getUser(interaction.user.id);
     const command = interaction.commandName;
-    const args = interaction.options.data.map((option) => option.value);
-
-    if (bot.commands.has(command)) {
-      bot.commands.get(command)!(user, args);
-    }
+    const args = new Map<string, string>();
+    interaction.options.data.forEach((arg) => {
+      args.set(arg.name, arg.value as string);
+    });
+    bot.commands.get(command)?.callback(user, args);
   });
 }

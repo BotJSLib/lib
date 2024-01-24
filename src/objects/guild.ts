@@ -26,6 +26,40 @@ export class Guild {
     }
   }
 
+  async mute(userId: string, time: number) {
+    if (this.bot.base instanceof Client) {
+      const guild = await this.bot.base.guilds.fetch(this.id);
+      const member = await guild.members.fetch(userId);
+      member.timeout(time / 1000);
+    } else {
+      await this.bot.base.restrictChatMember(this.id, Number(userId), {
+        until_date: Math.floor(Date.now() / 1000) + time,
+      });
+    }
+  }
+
+  async ban(userId: string) {
+    if (this.bot.base instanceof Client) {
+      const guild = await this.bot.base.guilds.fetch(this.id);
+      const member = await guild.members.fetch(userId);
+      member.ban();
+    } else {
+      await this.bot.base.banChatMember(this.id, Number(userId));
+    }
+  }
+
+  async kick(userId: string) {
+    if (this.bot.base instanceof Client) {
+      const guild = await this.bot.base.guilds.fetch(this.id);
+      const member = await guild.members.fetch(userId);
+      member.kick();
+    } else {
+      await this.bot.base.banChatMember(this.id, Number(userId), {
+        until_date: Math.floor(Date.now() / 1000) + 1,
+      });
+    }
+  }
+
   async fetch() {
     if (this.bot.base instanceof Client) {
       const guild = await this.bot.base.guilds.fetch(this.id);
@@ -36,5 +70,7 @@ export class Guild {
       this.name = user.first_name;
       this.iconUrl = user.photo?.big_file_id;
     }
+
+    this.bot.cache.set(this.id, this);
   }
 }

@@ -3,9 +3,11 @@ import {
   ButtonBuilder,
   ButtonStyle,
   Client,
+  StringSelectMenuBuilder,
 } from "discord.js";
 import { Bot } from "../bot";
 import Button from "./button";
+import SelectMenu from "./select-menu/menu";
 
 export class User {
   id: string;
@@ -19,9 +21,10 @@ export class User {
     this.bot = bot;
   }
 
-  async send(message: string, button?: Button) {
+  async send(message: string, button?: Button, selectMenu?: SelectMenu) {
     if (this.bot.base instanceof Client) {
       const user = await this.bot.base.users.fetch(this.id);
+      const components = [];
       if (button) {
         const discordButton = new ButtonBuilder()
           .setStyle(ButtonStyle.Primary)
@@ -30,24 +33,48 @@ export class User {
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
           discordButton
         );
-        await user.send({ components: [row], content: message });
-        return;
+        components.push(row);
       }
-      await user.send(message);
+      if (selectMenu) {
+        const discordSelectMenu = new StringSelectMenuBuilder()
+          .setCustomId(selectMenu.data)
+          .setPlaceholder(selectMenu.label)
+          .setOptions(
+            selectMenu.options.map((option) => ({
+              label: option.label,
+              value: option.data,
+            }))
+          );
+        const row =
+          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            discordSelectMenu
+          );
+        components.push(row);
+      }
+      await user.send({ components, content: message });
     } else {
+      const inlineKeyboard = [];
+      const keyboard = [];
       if (button) {
         const telegramButton = {
           text: button.label,
           callback_data: button.data,
         };
-        await this.bot.base.sendMessage(this.id, message, {
-          reply_markup: {
-            inline_keyboard: [[telegramButton]],
-          },
-        });
-        return;
+        inlineKeyboard.push([telegramButton]);
       }
-      await this.bot.base.sendMessage(this.id, message);
+      if (selectMenu) {
+        const telegramButtons = selectMenu.options.map((option) => ({
+          text: option.label,
+          callback_data: option.data,
+        }));
+        keyboard.push(telegramButtons);
+      }
+      await this.bot.base.sendMessage(this.id, message, {
+        reply_markup: {
+          inline_keyboard: inlineKeyboard,
+          keyboard,
+        },
+      });
     }
   }
 
@@ -61,5 +88,7 @@ export class User {
       this.username = user.username;
       this.avatarUrl = user.photo?.big_file_id;
     }
+
+    this.bot.cache.set(this.id, this);
   }
 }

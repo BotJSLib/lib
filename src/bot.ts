@@ -1,12 +1,19 @@
-import { Client } from "discord.js";
+import { Client, REST, Routes, SlashCommandBuilder } from "discord.js";
 import TelegramBot from "node-telegram-bot-api";
 import { User } from "./objects/user";
+import { Command } from "./objects/command";
+import JoinEvent from "./events/join";
+import MessageEvent from "./events/message";
+import LeaveEvent from "./events/leave";
+import MessageEditEvent from "./events/message-edit";
+import { Guild } from "./objects/guild";
 
 export class Bot {
   token: string;
   platform: Platform;
   base: Client | TelegramBot;
-  commands: Map<string, Function> = new Map();
+  commands: Map<string, Command> = new Map();
+  cache: Map<string, any> = new Map();
 
   constructor(token: string, platform: Platform) {
     this.token = token;
@@ -17,6 +24,11 @@ export class Bot {
     } else {
       this.base = new TelegramBot(token, { polling: true });
     }
+
+    new LeaveEvent(this);
+    new JoinEvent(this);
+    new MessageEvent(this);
+    new MessageEditEvent(this);
   }
 
   async start() {
@@ -26,35 +38,35 @@ export class Bot {
   }
 
   getUser(id: string) {
+    if (this.cache.has(id)) {
+      return this.cache.get(id);
+    }
     return new User(id, this);
   }
 
-  registerCommand(
-    command: string,
-    callback: (user: User, args: string[]) => void
-  ) {
-    this.commands.set(command, callback);
+  getGuild(id: string) {
+    if (this.cache.has(id)) {
+      return this.cache.get(id);
+    }
+    return new Guild(id, this);
+  }
+
+  registerCommand(command: Command) {
+    this.commands.set(command.name, command);
 
     if (this.base instanceof TelegramBot) {
       const regex = new RegExp(`^\/${command}$`);
       this.base.onText(regex, async (msg, match) => {
         const user = this.getUser(msg.chat.id.toString());
-        const args = match?.slice(1) ?? [];
-        callback(user, args);
-      });
-    }
-  }
-
-  onMessage(callback: (user: User, message: string) => void) {
-    if (this.base instanceof Client) {
-      this.base.on("message", async (msg) => {
-        const user = this.getUser(msg.author.id);
-        callback(user, msg.content);
-      });
-    } else {
-      this.base.on("message", async (msg) => {
-        const user = this.getUser(msg.chat.id.toString());
-        callback(user, msg.text || "");
+        const args = new Map<string, string>();
+        if (match) {
+          match.forEach((arg, i) => {
+            if (i > 0) {
+              args.set(command.args[i - 1].name, arg);
+            }
+          });
+        }
+        command.callback(user, args);
       });
     }
   }
@@ -73,6 +85,34 @@ export class Bot {
         }
       });
     }
+  }
+
+  async loadCommands() {
+    if (this.base instanceof Client) {
+      const rest = new REST({ version: "9" }).setToken(this.token);
+      const commands = [];
+      for (const command of this.commands.values()) {
+        const cmd = new SlashCommandBuilder()
+          .setName(command.name)
+          .setDescription(command.description);
+        for (const arg of command.args) {
+          cmd.addStringOption((option) => {
+            return option
+              .setName(arg.name)
+              .setDescription(arg.description)
+              .setRequired(arg.required);
+          });
+        }
+        commands.push(cmd);
+      }
+
+      await rest.put(Routes.applicationCommands(this.base.user!.id), {
+        body: commands,
+      });
+    }
+  }
+  getBot(): Bot {
+    return this;
   }
 }
 

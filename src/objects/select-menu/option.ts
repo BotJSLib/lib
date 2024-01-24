@@ -1,4 +1,4 @@
-export default class Button {
+export default class SelectMenuOption {
   label: string;
   data: string;
 
