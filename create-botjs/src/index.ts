@@ -74,7 +74,8 @@ const template = await prompts({
 
 const spinner = ora({
   spinner: cliSpinners.bouncingBar,
-  prefixText: prefix + " Downloading template...",
+  prefixText:
+    chalk.greenBright("✔ ") + chalk.bold(prefix + " Downloading template..."),
   color: "gray",
 }).start();
 
@@ -95,7 +96,8 @@ await tar.x({
 
 await pfs.unlink(temp);
 
-spinner.succeed(chalk.green(prefix + " Downloaded template!"));
+spinner.stop();
+console.log(chalk.greenBright("✔ ") + chalk.bold(prefix + " Done!"));
 
 try {
   execSync(
