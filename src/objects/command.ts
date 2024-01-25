@@ -3,13 +3,13 @@ import { User } from "./user";
 export class Command {
   name: string;
   description: string;
-  callback: (user: User, args: Map<string, string>) => void;
+  callback: (user: User, args: Map<string, string>) => string;
   args: Argument[];
 
   constructor(
     name: string,
     description: string,
-    callback: (user: User, args: Map<string, string>) => void,
+    callback: (user: User, args: Map<string, string>) => string,
     args: Argument[]
   ) {
     this.name = name;

@@ -7,6 +7,7 @@ import MessageEvent from "./events/message";
 import LeaveEvent from "./events/leave";
 import MessageEditEvent from "./events/message-edit";
 import { Guild } from "./objects/guild";
+import { handleCommandDiscord } from "./listeners/commands";
 
 export class Bot {
   token: string;
@@ -21,6 +22,7 @@ export class Bot {
 
     if (this.platform === Platform.Discord) {
       this.base = new Client({ intents: [] });
+      handleCommandDiscord(this);
     } else {
       this.base = new TelegramBot(token, { polling: true });
     }
@@ -55,7 +57,7 @@ export class Bot {
     this.commands.set(command.name, command);
 
     if (this.base instanceof TelegramBot) {
-      const regex = new RegExp(`^\/${command}$`);
+      const regex = new RegExp(`^\/${command.name}$`);
       this.base.onText(regex, async (msg, match) => {
         const user = this.getUser(msg.chat.id.toString());
         const args = new Map<string, string>();
@@ -66,7 +68,8 @@ export class Bot {
             }
           });
         }
-        command.callback(user, args);
+        const response = command.callback(user, args);
+        user.send(response);
       });
     }
   }

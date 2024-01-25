@@ -42,10 +42,10 @@ if (yargs.argv._.length === 0) {
         spinner.stop();
 
         if (err) {
-          console.log(prefix + " Error building the bot.");
+          console.log(chalk.red(prefix + " Error building the bot."));
           newPrefix = errorPrefix;
         } else {
-          console.log(prefix + " Bot built successfully.");
+          console.log(chalk.green(prefix + " Bot built successfully."));
         }
 
         const lines = stdout.split("\n");
@@ -64,13 +64,10 @@ if (yargs.argv._.length === 0) {
     nodemon({
       script: options.dev || yargs.argv._[1] || ".",
       ext: "js ts",
-      exec: "yarn tsx",
-    });
-    nodemon.on("start", () => {
-      console.log(prefix + " Bot started.");
+      exec: "npx tsx",
     });
     nodemon.on("quit", () => {
-      console.log(prefix + " Bot stopped.");
+      console.log(prefix + " Bot stopped");
     });
     nodemon.on("restart", (files) => {
       console.log(prefix + " Bot restarted due to: ", files);

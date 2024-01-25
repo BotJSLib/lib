@@ -11,6 +11,9 @@ export async function handleCommandDiscord(bot: Bot) {
     interaction.options.data.forEach((arg) => {
       args.set(arg.name, arg.value as string);
     });
-    bot.commands.get(command)?.callback(user, args);
+    const response = bot.commands.get(command)?.callback(user, args);
+    if (response) {
+      interaction.reply(response);
+    }
   });
 }
