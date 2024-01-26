@@ -1,19 +1,18 @@
 import { Client, REST, Routes, SlashCommandBuilder } from "discord.js";
 import TelegramBot from "node-telegram-bot-api";
 import { User } from "./objects/user";
-import { Command } from "./objects/command";
 import JoinEvent from "./events/join";
 import MessageEvent from "./events/message";
 import LeaveEvent from "./events/leave";
 import MessageEditEvent from "./events/message-edit";
 import { Guild } from "./objects/guild";
 import { handleCommandDiscord } from "./listeners/commands";
+import MetadataStorage from "./storage/metadata";
 
 export class Bot {
   token: string;
   platform: Platform;
   base: Client | TelegramBot;
-  commands: Map<string, Command> = new Map();
   cache: Map<string, any> = new Map();
 
   constructor(token: string, platform: Platform) {
@@ -53,27 +52,6 @@ export class Bot {
     return new Guild(id, this);
   }
 
-  registerCommand(command: Command) {
-    this.commands.set(command.name, command);
-
-    if (this.base instanceof TelegramBot) {
-      const regex = new RegExp(`^\/${command.name}$`);
-      this.base.onText(regex, async (msg, match) => {
-        const user = this.getUser(msg.chat.id.toString());
-        const args = new Map<string, string>();
-        if (match) {
-          match.forEach((arg, i) => {
-            if (i > 0) {
-              args.set(command.args[i - 1].name, arg);
-            }
-          });
-        }
-        const response = command.callback(user, args);
-        user.send(response);
-      });
-    }
-  }
-
   onButton(callback: (user: User, data: string) => void) {
     if (this.base instanceof TelegramBot) {
       this.base.on("callback_query", async (query) => {
@@ -94,7 +72,7 @@ export class Bot {
     if (this.base instanceof Client) {
       const rest = new REST({ version: "9" }).setToken(this.token);
       const commands = [];
-      for (const command of this.commands.values()) {
+      for (const command of MetadataStorage.getInstance().commands.values()) {
         const cmd = new SlashCommandBuilder()
           .setName(command.name)
           .setDescription(command.description);
@@ -112,6 +90,25 @@ export class Bot {
       await rest.put(Routes.applicationCommands(this.base.user!.id), {
         body: commands,
       });
+    }
+
+    if (this.base instanceof TelegramBot) {
+      for (const command of MetadataStorage.getInstance().commands.values()) {
+        const regex = new RegExp(`^\/${command.name}$`);
+        this.base.onText(regex, async (msg, match) => {
+          const user = this.getUser(msg.chat.id.toString());
+          const args = new Map<string, string>();
+          if (match) {
+            match.forEach((arg, i) => {
+              if (i > 0) {
+                args.set(command.args[i - 1].name, arg);
+              }
+            });
+          }
+          const response = command.callback(user, args);
+          user.send(response);
+        });
+      }
     }
   }
   getBot(): Bot {

@@ -1,5 +1,6 @@
 import { Client } from "discord.js";
 import { Bot } from "../bot";
+import MetadataStorage from "../storage/metadata";
 
 export async function handleCommandDiscord(bot: Bot) {
   (bot.base as Client).on("interactionCreate", async (interaction) => {
@@ -11,7 +12,9 @@ export async function handleCommandDiscord(bot: Bot) {
     interaction.options.data.forEach((arg) => {
       args.set(arg.name, arg.value as string);
     });
-    const response = bot.commands.get(command)?.callback(user, args);
+    const response = MetadataStorage.getInstance().commands
+      .get(command)
+      ?.callback(user, args);
     if (response) {
       interaction.reply(response);
     }
