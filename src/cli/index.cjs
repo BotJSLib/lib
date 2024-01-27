@@ -3,8 +3,7 @@ const yargs = require("yargs");
 const chalk = require("chalk");
 const child_process = require("child_process");
 const cliSpinners = require("cli-spinners");
-const nodemon = require("nodemon");
-
+const { spawn } = require("child_process");
 const prefix = chalk.bgBlue(" BOT.JS ");
 const errorPrefix = chalk.bgRed(" ERROR ");
 
@@ -42,10 +41,10 @@ if (yargs.argv._.length === 0) {
         spinner.stop();
 
         if (err) {
-          console.log(chalk.red(prefix + " Error building the bot."));
           newPrefix = errorPrefix;
+          console.log(newPrefix + " Error building the bot.");
         } else {
-          console.log(chalk.green(prefix + " Bot built successfully."));
+          console.log(newPrefix + " Bot built successfully.");
         }
 
         const lines = stdout.split("\n");
@@ -61,16 +60,21 @@ if (yargs.argv._.length === 0) {
   }
 
   if (options.dev || yargs.argv._[0] === "dev") {
-    nodemon({
-      script: options.dev || yargs.argv._[1] || ".",
-      ext: "js ts",
-      exec: "npx tsx",
-    });
-    nodemon.on("quit", () => {
-      console.log(prefix + " Bot stopped");
-    });
-    nodemon.on("restart", (files) => {
-      console.log(prefix + " Bot restarted due to: ", files);
+    process.env.BOTJS_WATCH = "true";
+    const child = spawn(
+      "node --loader ts-node/esm/transpile-only " +
+        (options.dev || yargs.argv._[1] || "."),
+      {
+        shell: true,
+        cwd: process.cwd(),
+        stdio: "inherit",
+      }
+    );
+
+    child.on("exit", (code) => {
+      if (code === 1) {
+        console.log(errorPrefix + " Error running the bot.");
+      }
     });
   }
 }

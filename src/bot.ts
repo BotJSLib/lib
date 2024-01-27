@@ -1,13 +1,16 @@
-import { Client, REST, Routes, SlashCommandBuilder } from "discord.js";
+import {
+  Client,
+  IntentsBitField,
+  Partials,
+  REST,
+  Routes,
+  SlashCommandBuilder,
+} from "discord.js";
 import TelegramBot from "node-telegram-bot-api";
-import { User } from "./objects/user";
-import JoinEvent from "./events/join";
-import MessageEvent from "./events/message";
-import LeaveEvent from "./events/leave";
-import MessageEditEvent from "./events/message-edit";
-import { Guild } from "./objects/guild";
-import { handleCommandDiscord } from "./listeners/commands";
-import MetadataStorage from "./storage/metadata";
+import { User } from "./objects/user.js";
+import { Guild } from "./objects/guild.js";
+import { handleCommandDiscord } from "./listeners/commands.js";
+import MetadataStorage from "./storage/metadata.js";
 
 export class Bot {
   token: string;
@@ -20,16 +23,18 @@ export class Bot {
     this.platform = platform;
 
     if (this.platform === Platform.Discord) {
-      this.base = new Client({ intents: [] });
-      handleCommandDiscord(this);
+      this.base = new Client({
+        intents: [
+          IntentsBitField.Flags.Guilds,
+          IntentsBitField.Flags.GuildMessages,
+          IntentsBitField.Flags.GuildModeration,
+          IntentsBitField.Flags.MessageContent,
+        ],
+        partials: [Partials.Channel, Partials.Message],
+      });
     } else {
       this.base = new TelegramBot(token, { polling: true });
     }
-
-    new LeaveEvent(this);
-    new JoinEvent(this);
-    new MessageEvent(this);
-    new MessageEditEvent(this);
   }
 
   async start() {
@@ -70,6 +75,7 @@ export class Bot {
 
   async loadCommands() {
     if (this.base instanceof Client) {
+      handleCommandDiscord(this);
       const rest = new REST({ version: "9" }).setToken(this.token);
       const commands = [];
       for (const command of MetadataStorage.getInstance().commands.values()) {
@@ -101,7 +107,7 @@ export class Bot {
           if (match) {
             match.forEach((arg, i) => {
               if (i > 0) {
-                args.set(command.args[i - 1].name, arg);
+                args.set(command.args[i - 1]!.name, arg);
               }
             });
           }
@@ -111,6 +117,93 @@ export class Bot {
       }
     }
   }
+
+  async loadEvents() {
+    if (this.base instanceof Client) {
+      this.base.on("guildMemberAdd", async (member) => {
+        const user = this.getBot().getUser(member.id);
+        const events = MetadataStorage.getInstance().events.get("join");
+        if (events) {
+          events.forEach((event) => {
+            event(user);
+          });
+        }
+      });
+
+      this.base.on("guildMemberRemove", async (member) => {
+        const user = this.getBot().getUser(member.id);
+        const events = MetadataStorage.getInstance().events.get("leave");
+        if (events) {
+          events.forEach((event) => {
+            event(user);
+          });
+        }
+      });
+
+      this.base.on("messageUpdate", async (msg, newMsg) => {
+        const user = this.getBot().getUser(msg.author!.id);
+        const events = MetadataStorage.getInstance().events.get("message-edit");
+        if (events) {
+          events.forEach((event) => {
+            event(user, msg.content || "", newMsg.content || "");
+          });
+        }
+      });
+
+
+      this.base.on("messageCreate", async (msg) => {
+        const user = this.getBot().getUser(msg.author.id);
+        const events = MetadataStorage.getInstance().events.get("message");
+        if (events) {
+          events.forEach((event) => {
+            event(user, msg.content);
+          });
+        }
+      });
+    }
+    if (this.base instanceof TelegramBot) {
+      this.base.on("new_chat_members", async (msg) => {
+        const user = this.getBot().getUser(msg.chat.id.toString());
+        const events = MetadataStorage.getInstance().events.get("join");
+        if (events) {
+          events.forEach((event) => {
+            event(user);
+          });
+        }
+      });
+
+      this.base.on("left_chat_member", async (msg) => {
+        const user = this.getBot().getUser(msg.chat.id.toString());
+        const events = MetadataStorage.getInstance().events.get("leave");
+        if (events) {
+          events.forEach((event) => {
+            event(user);
+          });
+        }
+      });
+
+      this.base.on("edited_message", async (msg) => {
+        const user = this.getBot().getUser(msg.chat.id.toString());
+        const events = MetadataStorage.getInstance().events.get("message-edit");
+        if (events) {
+          events.forEach((event) => {
+            event(user, "", msg.text || "");
+          });
+        }
+      });
+
+      this.base.on("message", async (msg) => {
+        const user = this.getBot().getUser(msg.chat.id.toString());
+        const events = MetadataStorage.getInstance().events.get("message");
+        if (events) {
+          events.forEach((event) => {
+            event(user, msg.text || "");
+          });
+        }
+      });
+    }
+  }
+
   getBot(): Bot {
     return this;
   }

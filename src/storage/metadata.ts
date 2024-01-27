@@ -1,15 +1,15 @@
-import { Command } from "../objects/command";
+import { RegisteredCommand } from "../objects/command.js";
 
 export default class MetadataStorage {
-    static instance: MetadataStorage;
+  static instance: MetadataStorage;
 
-    static getInstance(): MetadataStorage {
-        if (!MetadataStorage.instance) {
-            MetadataStorage.instance = new MetadataStorage();
-        }
-        return MetadataStorage.instance;
+  static getInstance(): MetadataStorage {
+    if (!MetadataStorage.instance) {
+      MetadataStorage.instance = new MetadataStorage();
     }
+    return MetadataStorage.instance;
+  }
 
-    commands: Map<string, Command> = new Map<string, Command>();
-
+  commands: Map<string, RegisteredCommand> = new Map<string, RegisteredCommand>();
+  events: Map<string, Function[]> = new Map<string, Function[]>();
 }

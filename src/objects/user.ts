@@ -5,9 +5,9 @@ import {
   Client,
   StringSelectMenuBuilder,
 } from "discord.js";
-import { Bot } from "../bot";
-import Button from "./button";
-import SelectMenu from "./select-menu/menu";
+import { Bot } from "../bot.js";
+import Button from "./button.js";
+import SelectMenu from "./select-menu/menu.js";
 
 export class User {
   id: string;

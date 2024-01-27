@@ -1,5 +1,5 @@
 import { Client, TextChannel } from "discord.js";
-import { Bot } from "../bot";
+import { Bot } from "../bot.js";
 
 export class Guild {
   id: string;

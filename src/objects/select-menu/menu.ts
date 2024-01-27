@@ -1,4 +1,4 @@
-import SelectMenuOption from "./option";
+import SelectMenuOption from "./option.js";
 
 export default class SelectMenu {
   label: string;

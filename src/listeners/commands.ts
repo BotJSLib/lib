@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
-import { Bot } from "../bot";
-import MetadataStorage from "../storage/metadata";
+import { Bot } from "../bot.js";
+import MetadataStorage from "../storage/metadata.js";
 
 export async function handleCommandDiscord(bot: Bot) {
   (bot.base as Client).on("interactionCreate", async (interaction) => {

@@ -1,6 +1,6 @@
-import { User } from "./user";
+import { User } from "./user.js";
 
-export class Command {
+export class RegisteredCommand {
   name: string;
   description: string;
   callback: (user: User, args: Map<string, string>) => string;
