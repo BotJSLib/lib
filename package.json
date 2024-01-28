@@ -9,6 +9,10 @@
   "bin": {
     "botjs": "src/cli/index.cjs"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BotJSLib/lib.git"
+  },
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.64.2",
     "@types/yargs": "^17.0.32",
