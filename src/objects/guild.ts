@@ -1,5 +1,6 @@
 import { Client, TextChannel } from "discord.js";
 import { Bot } from "../bot.js";
+import { MessageBuilder } from "./message.js";
 
 export class Guild {
   id: string;
@@ -13,16 +14,20 @@ export class Guild {
     this.bot = bot;
   }
 
-  async send(message: string, channelId?: string) {
+  async send(message: MessageBuilder, channelId?: string) {
     if (this.bot.base instanceof Client) {
       if (!channelId)
         throw new Error("Channel ID is required when using a client.");
 
       const guild = await this.bot.base.guilds.fetch(this.id);
       const channel = (await guild.channels.fetch(channelId)) as TextChannel;
-      await channel.send(message);
+      await channel.send(message.toDiscord());
     } else {
-      await this.bot.base.sendMessage(this.id, message);
+      await this.bot.base.sendMessage(
+        this.id,
+        message.content,
+        message.toTelegram()
+      );
     }
   }
 

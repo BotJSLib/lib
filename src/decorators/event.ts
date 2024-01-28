@@ -1,6 +1,8 @@
-import MetadataStorage from "../storage/metadata.js";
+import { MetadataStorage } from "../storage/metadata.js";
 
-export function Event(event: "join" | "leave" | "message-edit" | "message") {
+export type EventType = "join" | "leave" | "message-edit" | "message";
+
+export function Event(event: EventType) {
   return function (
     target: any,
     propertyKey: string,

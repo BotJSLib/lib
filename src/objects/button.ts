@@ -1,4 +1,4 @@
-export default class Button {
+export class ButtonBuilder {
   label: string;
   data: string;
 

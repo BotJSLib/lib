@@ -1,15 +1,16 @@
+import { MessageBuilder } from "./message.js";
 import { User } from "./user.js";
 
 export class RegisteredCommand {
   name: string;
   description: string;
-  callback: (user: User, args: Map<string, string>) => string;
+  callback: (user: User, args: Map<string, string>) => MessageBuilder;
   args: Argument[];
 
   constructor(
     name: string,
     description: string,
-    callback: (user: User, args: Map<string, string>) => string,
+    callback: (user: User, args: Map<string, string>) => MessageBuilder,
     args: Argument[]
   ) {
     this.name = name;

@@ -9,8 +9,16 @@ import {
 import TelegramBot from "node-telegram-bot-api";
 import { User } from "./objects/user.js";
 import { Guild } from "./objects/guild.js";
-import { handleCommandDiscord } from "./listeners/commands.js";
-import MetadataStorage from "./storage/metadata.js";
+import {
+  handleButtonDiscord,
+  handleCommandDiscord,
+  handleSelectMenuDiscord,
+} from "./listeners/discord-interactions.js";
+import { MetadataStorage } from "./storage/metadata.js";
+import { Listener } from "./listeners/base-listener.js";
+import { DiscordListener } from "./listeners/discord-listener.js";
+import { TelegramListener } from "./listeners/telegram-listener.js";
+import { MessageBuilder } from "./objects/message.js";
 
 export class Bot {
   token: string;
@@ -43,14 +51,14 @@ export class Bot {
     }
   }
 
-  getUser(id: string) {
+  getUser(id: string): User {
     if (this.cache.has(id)) {
       return this.cache.get(id);
     }
     return new User(id, this);
   }
 
-  getGuild(id: string) {
+  getGuild(id: string): Guild {
     if (this.cache.has(id)) {
       return this.cache.get(id);
     }
@@ -76,6 +84,8 @@ export class Bot {
   async loadCommands() {
     if (this.base instanceof Client) {
       handleCommandDiscord(this);
+      handleButtonDiscord(this);
+      handleSelectMenuDiscord(this);
       const rest = new REST({ version: "9" }).setToken(this.token);
       const commands = [];
       for (const command of MetadataStorage.getInstance().commands.values()) {
@@ -92,13 +102,36 @@ export class Bot {
         }
         commands.push(cmd);
       }
-
       await rest.put(Routes.applicationCommands(this.base.user!.id), {
         body: commands,
       });
     }
 
     if (this.base instanceof TelegramBot) {
+      this.base.on("callback_query", async (query) => {
+        const action = query.data;
+        const msg = query.message;
+        const button = MetadataStorage.getInstance().buttons.get(action!);
+        if (button) {
+          const user = this.getUser(msg!.chat.id.toString());
+          const response: MessageBuilder = button(user);
+          if (response) user.send(response);
+        }
+      });
+
+      this.base.onText(/^(.+):(.+)$/, async (msg, match) => {
+        const action = match![1];
+        const data = match![2];
+        const selectMenu = MetadataStorage.getInstance().selectMenu.get(
+          action!
+        );
+        if (selectMenu) {
+          const user = this.getUser(msg.chat.id.toString());
+          const response: MessageBuilder = selectMenu(user, data);
+          if (response) user.send(response);
+        }
+      });
+
       for (const command of MetadataStorage.getInstance().commands.values()) {
         const regex = new RegExp(`^\/${command.name}$`);
         this.base.onText(regex, async (msg, match) => {
@@ -111,97 +144,42 @@ export class Bot {
               }
             });
           }
-          const response = command.callback(user, args);
-          user.send(response);
+          const response: MessageBuilder = command.callback(user, args);
+          if (response) user.send(response);
         });
       }
     }
   }
 
   async loadEvents() {
+    let listener: Listener | null = null;
     if (this.base instanceof Client) {
-      this.base.on("guildMemberAdd", async (member) => {
-        const user = this.getBot().getUser(member.id);
-        const events = MetadataStorage.getInstance().events.get("join");
-        if (events) {
-          events.forEach((event) => {
-            event(user);
-          });
-        }
-      });
-
-      this.base.on("guildMemberRemove", async (member) => {
-        const user = this.getBot().getUser(member.id);
-        const events = MetadataStorage.getInstance().events.get("leave");
-        if (events) {
-          events.forEach((event) => {
-            event(user);
-          });
-        }
-      });
-
-      this.base.on("messageUpdate", async (msg, newMsg) => {
-        const user = this.getBot().getUser(msg.author!.id);
-        const events = MetadataStorage.getInstance().events.get("message-edit");
-        if (events) {
-          events.forEach((event) => {
-            event(user, msg.content || "", newMsg.content || "");
-          });
-        }
-      });
-
-
-      this.base.on("messageCreate", async (msg) => {
-        const user = this.getBot().getUser(msg.author.id);
-        const events = MetadataStorage.getInstance().events.get("message");
-        if (events) {
-          events.forEach((event) => {
-            event(user, msg.content);
-          });
-        }
-      });
+      listener = new DiscordListener(this);
     }
     if (this.base instanceof TelegramBot) {
-      this.base.on("new_chat_members", async (msg) => {
-        const user = this.getBot().getUser(msg.chat.id.toString());
-        const events = MetadataStorage.getInstance().events.get("join");
-        if (events) {
-          events.forEach((event) => {
-            event(user);
-          });
-        }
-      });
-
-      this.base.on("left_chat_member", async (msg) => {
-        const user = this.getBot().getUser(msg.chat.id.toString());
-        const events = MetadataStorage.getInstance().events.get("leave");
-        if (events) {
-          events.forEach((event) => {
-            event(user);
-          });
-        }
-      });
-
-      this.base.on("edited_message", async (msg) => {
-        const user = this.getBot().getUser(msg.chat.id.toString());
-        const events = MetadataStorage.getInstance().events.get("message-edit");
-        if (events) {
-          events.forEach((event) => {
-            event(user, "", msg.text || "");
-          });
-        }
-      });
-
-      this.base.on("message", async (msg) => {
-        const user = this.getBot().getUser(msg.chat.id.toString());
-        const events = MetadataStorage.getInstance().events.get("message");
-        if (events) {
-          events.forEach((event) => {
-            event(user, msg.text || "");
-          });
-        }
-      });
+      listener = new TelegramListener(this);
     }
+
+    if (!listener) {
+      throw new Error("Platform not supported");
+    }
+
+    MetadataStorage.getInstance().events.forEach((fun, event) => {
+      switch (event) {
+        case "join":
+          fun.forEach((f) => listener!.registerMemberAdd(f));
+          break;
+        case "leave":
+          fun.forEach((f) => listener!.registerMemberRemove(f));
+          break;
+        case "message-edit":
+          fun.forEach((f) => listener!.registerMessageUpdate(f));
+          break;
+        case "message":
+          fun.forEach((f) => listener!.registerMessageCreate(f));
+          break;
+      }
+    });
   }
 
   getBot(): Bot {

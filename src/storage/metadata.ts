@@ -1,6 +1,7 @@
+import { EventType } from "../decorators/event.js";
 import { RegisteredCommand } from "../objects/command.js";
 
-export default class MetadataStorage {
+export class MetadataStorage {
   static instance: MetadataStorage;
 
   static getInstance(): MetadataStorage {
@@ -10,6 +11,11 @@ export default class MetadataStorage {
     return MetadataStorage.instance;
   }
 
-  commands: Map<string, RegisteredCommand> = new Map<string, RegisteredCommand>();
-  events: Map<string, Function[]> = new Map<string, Function[]>();
+  commands: Map<string, RegisteredCommand> = new Map<
+    string,
+    RegisteredCommand
+  >();
+  buttons: Map<string, Function> = new Map<string, Function>();
+  selectMenu: Map<string, Function> = new Map<string, Function>();
+  events: Map<EventType, Function[]> = new Map<EventType, Function[]>();
 }

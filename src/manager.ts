@@ -8,7 +8,7 @@ import MetadataStorage from "./storage/metadata.js";
 
 const prefix = chalk.bgBlue(" BOT.JS ");
 
-export default class BotManager {
+export class BotManager {
   bots: Bot[] = [];
 
   create(token: string, platform: Platform) {
@@ -90,6 +90,7 @@ export default class BotManager {
 
     MetadataStorage.getInstance().commands.clear();
     MetadataStorage.getInstance().events.clear();
+    MetadataStorage.getInstance().buttons.clear();
 
     await this.loadDevFiles(dir);
 

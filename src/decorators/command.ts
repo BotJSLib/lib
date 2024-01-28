@@ -1,5 +1,5 @@
 import { RegisteredCommand, Argument } from "../objects/command.js";
-import MetadataStorage from "../storage/metadata.js";
+import { MetadataStorage } from "../storage/metadata.js";
 
 export function Command(
   name: string,
