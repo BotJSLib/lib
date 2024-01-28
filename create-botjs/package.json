@@ -1,10 +1,14 @@
 {
   "name": "create-botjs",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "bin": {
     "create-botjs": "dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BotJSLib/lib.git"
   },
   "type": "module",
   "scripts": {
