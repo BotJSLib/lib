@@ -23,12 +23,7 @@ const res = await prompts(
     message: `${prefix} What is your project name?`,
     name: "name",
   },
-  {
-    onCancel: () => {
-      console.log(`${prefix} Bye!`);
-      process.exit(0);
-    },
-  }
+  {}
 );
 
 const projectPath = "./" + res.name.trim();
