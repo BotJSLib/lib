@@ -1,7 +1,7 @@
 {
   "name": "@michelo11/botjs",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "BotJS",
   "license": "MIT",
   "type": "module",
@@ -13,6 +13,11 @@
     "type": "git",
     "url": "https://github.com/BotJSLib/lib.git"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.cjs",
