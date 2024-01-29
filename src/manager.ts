@@ -4,7 +4,7 @@ import { importx, resolve } from "@discordx/importer";
 import chokidar from "chokidar";
 import { Client } from "discord.js";
 import TelegramBot from "node-telegram-bot-api";
-import MetadataStorage from "./storage/metadata.js";
+import { MetadataStorage } from "./storage/metadata.js";
 
 const prefix = chalk.bgBlue(" BOT.JS ");
 
@@ -20,23 +20,23 @@ export class BotManager {
   async start() {
     for (const bot of this.bots) {
       await bot.start();
-      console.log(`${prefix} Started bot ${bot.platform}`);
+      console.log(chalk.bold(`${prefix} Started bot ${bot.platform}`));
     }
   }
 
   async loadFiles(dir: string) {
     await importx(`${dir}/commands/**/*.{ts,js}`).then(() => {
-      console.log(`${prefix} Loaded commands`);
+      console.log(chalk.bold(`${prefix} Loaded commands`));
     });
 
     await importx(`${dir}/events/**/*.{ts,js}`).then(() => {
-      console.log(`${prefix} Loaded events`);
+      console.log(chalk.bold(`${prefix} Loaded events`));
     });
 
     for (const bot of this.bots) {
       await bot.loadCommands();
       await bot.loadEvents();
-      console.log(`${prefix} Loaded files for bot ${bot.platform}`);
+      console.log(chalk.bold(`${prefix} Loaded files for bot ${bot.platform}`));
     }
   }
 
@@ -48,17 +48,17 @@ export class BotManager {
     await this.reloadDevFiles(pattern);
 
     watcher.on("change", async (path) => {
-      console.log(`${prefix} File changed: ${path}`);
+      console.log(chalk.bold(`${prefix} File changed: ${path}`));
       await this.reloadDevFiles(pattern);
     });
 
     watcher.on("add", async (path) => {
-      console.log(`${prefix} File added: ${path}`);
+      console.log(chalk.bold(`${prefix} File added: ${path}`));
       await this.reloadDevFiles(pattern);
     });
 
     watcher.on("unlink", async (path) => {
-      console.log(`${prefix} File removed: ${path}`);
+      console.log(chalk.bold(`${prefix} File removed: ${path}`));
       await this.reloadDevFiles(pattern);
     });
   }

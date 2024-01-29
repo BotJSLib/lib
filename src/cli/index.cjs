@@ -5,10 +5,10 @@ const child_process = require("child_process");
 const cliSpinners = require("cli-spinners");
 const { spawn } = require("child_process");
 const prefix = chalk.bgBlue(" BOT.JS ");
-const errorPrefix = chalk.bgRed(" ERROR ");
 
-const usage =
-  chalk.bgBlue("Bot.js CLI") + "\n" + chalk.gray("Usage: botjs [build/dev]");
+const usage = chalk.bold(
+  chalk.bgBlue(" BOT.JS ") + chalk.gray(" Usage: botjs [build/dev]")
+);
 
 const options = yargs
   .usage(usage)
@@ -30,7 +30,7 @@ if (yargs.argv._.length === 0) {
     import("ora").then(({ default: ora }) => {
       const spinner = ora({
         spinner: cliSpinners.bouncingBar,
-        prefixText: prefix + " Building the bot",
+        prefixText: chalk.bold(prefix + " Building the bot"),
         color: "gray",
       }).start();
       // run tsc
@@ -41,10 +41,11 @@ if (yargs.argv._.length === 0) {
         spinner.stop();
 
         if (err) {
-          newPrefix = errorPrefix;
-          console.log(newPrefix + " Error building the bot.");
+          newPrefix = chalk.redBright("✖ ") + prefix;
+          console.log(chalk.bold(newPrefix + " Error building the bot"));
         } else {
-          console.log(newPrefix + " Bot built successfully.");
+          newPrefix = chalk.greenBright("✔ ") + prefix;
+          console.log(chalk.bold(newPrefix + " Bot built successfully"));
         }
 
         const lines = stdout.split("\n");
@@ -53,7 +54,7 @@ if (yargs.argv._.length === 0) {
         lines.pop();
 
         for (const line of lines) {
-          console.log(newPrefix + " " + line);
+          console.log(chalk.bold(newPrefix + " " + line));
         }
       });
     });
@@ -62,7 +63,7 @@ if (yargs.argv._.length === 0) {
   if (options.dev || yargs.argv._[0] === "dev") {
     process.env.BOTJS_WATCH = "true";
     const child = spawn(
-      "node --loader ts-node/esm/transpile-only " +
+      "node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only " +
         (options.dev || yargs.argv._[1] || "."),
       {
         shell: true,
@@ -73,7 +74,9 @@ if (yargs.argv._.length === 0) {
 
     child.on("exit", (code) => {
       if (code === 1) {
-        console.log(errorPrefix + " Error running the bot.");
+        console.log(
+          chalk.redBright("✖ ") + chalk.bold(prefix + " Error running the bot")
+        );
       }
     });
   }

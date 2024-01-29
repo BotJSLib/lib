@@ -23,7 +23,7 @@ const res = await prompts(
     message: `${prefix} What is your project name?`,
     name: "name",
   },
-  {}
+  { onCancel: () => process.exit(0) }
 );
 
 const projectPath = "./" + res.name.trim();
@@ -103,5 +103,8 @@ try {
     }
   );
 } catch (err) {
-  console.log(chalk.red(prefix + " Failed to update project name :("));
+  console.log(
+    chalk.redBright("✖ ") +
+      chalk.bold(prefix + " Failed to update project name")
+  );
 }
