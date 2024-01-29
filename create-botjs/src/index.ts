@@ -108,3 +108,8 @@ try {
       chalk.bold(prefix + " Failed to update project name")
   );
 }
+
+execSync(`${packageManager.value} install`, {
+  cwd: resolvedProjectPath,
+  stdio: "ignore",
+});
