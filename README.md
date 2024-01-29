@@ -24,6 +24,13 @@ npm i bot.js
 botjs dev/build
 ```
 
+# Using a template 
+Use the following command to create a project with a template:
+
+```bash
+pnpm create botjs
+```
+
 ## Author
 
 👤 **Michelo11**
