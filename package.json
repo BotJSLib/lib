@@ -1,7 +1,7 @@
 {
   "name": "@michelo11/botjs",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "BotJS",
   "license": "MIT",
   "type": "module",
@@ -13,6 +13,13 @@
     "type": "git",
     "url": "https://github.com/BotJSLib/lib.git"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.cjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.64.2",
     "@types/yargs": "^17.0.32",
@@ -32,5 +39,8 @@
     "ora": "^8.0.1",
     "tsx": "^4.7.0",
     "yargs": "^17.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
