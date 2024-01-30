@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to Bot.js 👋</h1>
 <p>
-  <a href="https://michelemanna.me" target="_blank">
+  <a href="https://botjs.michelemanna.me" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
   <a href="https://twitter.com/Michelo117" target="_blank">
