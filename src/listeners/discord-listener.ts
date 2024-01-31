@@ -1,36 +1,43 @@
-import { Client } from "discord.js";
-import { Listener } from "./base-listener";
-import { Bot } from "../bot";
+import { GuildMember, Message } from "discord.js";
+import { Listener } from "./base-listener.js";
+import { Bot } from "../bot.js";
+import { Base } from "../wrapper/base.js";
 
 export class DiscordListener implements Listener {
   private bot: Bot;
-  private base: Client;
+  private base: Base;
 
   constructor(bot: Bot) {
     this.bot = bot;
-    this.base = bot.base as Client;
+    this.base = bot.base;
   }
 
   registerMemberAdd(fun: Function): void {
-    this.base.on("guildMemberAdd", async (member) => {
+    this.base.subscribe("guildMemberAdd", async (member: GuildMember) => {
       const user = this.bot.getUser(member.id);
       fun(user);
     });
   }
+
   registerMemberRemove(fun: Function): void {
-    this.base.on("guildMemberRemove", async (member) => {
+    this.base.subscribe("guildMemberRemove", async (member: GuildMember) => {
       const user = this.bot.getUser(member.id);
       fun(user);
     });
   }
+
   registerMessageUpdate(fun: Function): void {
-    this.base.on("messageUpdate", async (msg, newMsg) => {
-      const user = this.bot.getUser(msg.author!.id);
-      fun(user, msg.content, newMsg.content);
-    });
+    this.base.subscribe(
+      "messageUpdate",
+      async (msg: Message, newMsg: Message) => {
+        const user = this.bot.getUser(msg.author!.id);
+        fun(user, msg.content, newMsg.content);
+      }
+    );
   }
+  
   registerMessageCreate(fun: Function): void {
-    this.base.on("messageCreate", async (msg) => {
+    this.base.subscribe("messageCreate", async (msg: Message) => {
       const user = this.bot.getUser(msg.author.id);
       fun(user, msg.content);
     });

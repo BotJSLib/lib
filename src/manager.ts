@@ -11,8 +11,8 @@ const prefix = chalk.bgBlue(" BOT.JS ");
 export class BotManager {
   bots: Bot[] = [];
 
-  create(token: string, platform: Platform) {
-    const bot = new Bot(token, platform);
+  create(token: string, platform: Platform, options?: any) {
+    const bot = new Bot(token, platform, options);
     this.bots.push(bot);
     return bot;
   }

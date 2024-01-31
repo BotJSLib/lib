@@ -1,4 +1,3 @@
-import { Client } from "discord.js";
 import { Bot } from "../bot.js";
 import { MessageBuilder } from "./message.js";
 
@@ -15,29 +14,15 @@ export class User {
   }
 
   async send(message: MessageBuilder) {
-    if (this.bot.base instanceof Client) {
-      const user = await this.bot.base.users.fetch(this.id);
-      await user.send(message.toDiscord());
-    } else {
-      await this.bot.base.sendMessage(
-        this.id,
-        message.content,
-        message.toTelegram()
-      );
-    }
+    await this.bot.base.sendToUser(this.id, message);
   }
 
   async fetch() {
-    if (this.bot.base instanceof Client) {
-      const user = await this.bot.base.users.fetch(this.id);
-      this.username = user.username;
-      this.avatarUrl = user.displayAvatarURL();
-    } else {
-      const user = await this.bot.base.getChat(this.id);
-      this.username = user.username;
-      this.avatarUrl = user.photo?.big_file_id;
-    }
+    const user = await this.bot.base.getUser(this.id);
+    this.username = user.username;
+    this.avatarUrl = user.avatarUrl;
 
     this.bot.cache.set(this.id, this);
+    return this;
   }
 }
