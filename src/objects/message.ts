@@ -9,6 +9,7 @@ import {
 import { ButtonBuilder } from "./button.js";
 import { SelectMenuBuilder } from "./select-menu/menu.js";
 import { SelectMenuOption } from "./select-menu/option.js";
+import { KnownBlock } from "@slack/bolt";
 
 export class MessageBuilder {
   content: string;
@@ -98,6 +99,56 @@ export class MessageBuilder {
 
     return {
       reply_markup,
+    };
+  }
+
+  toSlack(): {
+    text: string;
+    blocks: KnownBlock[];
+  } {
+    const blocks: KnownBlock[] = [];
+
+    if (this.buttons.length > 0) {
+      blocks.push({
+        type: "actions",
+        elements: this.buttons.map((button) => ({
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: button.label,
+          },
+          value: button.data,
+          action_id: button.data,
+        })),
+      });
+    }
+
+    if (this.selectMenu) {
+      blocks.push({
+        type: "actions",
+        elements: [
+          {
+            type: "static_select",
+            placeholder: {
+              type: "plain_text",
+              text: this.selectMenu.label,
+            },
+            action_id: this.selectMenu.data,
+            options: this.selectMenu.options.map((option) => ({
+              text: {
+                type: "plain_text",
+                text: option.label,
+              },
+              value: option.data,
+            })),
+          },
+        ],
+      });
+    }
+
+    return {
+      text: this.content,
+      blocks: blocks,
     };
   }
 }

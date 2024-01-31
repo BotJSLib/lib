@@ -1,4 +1,3 @@
-import { Client, TextChannel } from "discord.js";
 import { Bot } from "../bot.js";
 import { MessageBuilder } from "./message.js";
 
@@ -15,67 +14,27 @@ export class Guild {
   }
 
   async send(message: MessageBuilder, channelId?: string) {
-    if (this.bot.base instanceof Client) {
-      if (!channelId)
-        throw new Error("Channel ID is required when using a client.");
-
-      const guild = await this.bot.base.guilds.fetch(this.id);
-      const channel = (await guild.channels.fetch(channelId)) as TextChannel;
-      await channel.send(message.toDiscord());
-    } else {
-      await this.bot.base.sendMessage(
-        this.id,
-        message.content,
-        message.toTelegram()
-      );
-    }
+    await this.bot.base.sendToChannel(channelId || this.id, message, this.id);
   }
 
   async mute(userId: string, time: number) {
-    if (this.bot.base instanceof Client) {
-      const guild = await this.bot.base.guilds.fetch(this.id);
-      const member = await guild.members.fetch(userId);
-      member.timeout(time / 1000);
-    } else {
-      await this.bot.base.restrictChatMember(this.id, Number(userId), {
-        until_date: Math.floor(Date.now() / 1000) + time,
-      });
-    }
+    await this.bot.base.muteUser(userId, this.id, time);
   }
 
   async ban(userId: string) {
-    if (this.bot.base instanceof Client) {
-      const guild = await this.bot.base.guilds.fetch(this.id);
-      const member = await guild.members.fetch(userId);
-      member.ban();
-    } else {
-      await this.bot.base.banChatMember(this.id, Number(userId));
-    }
+    await this.bot.base.banUser(userId, this.id, "No reason provided");
   }
 
   async kick(userId: string) {
-    if (this.bot.base instanceof Client) {
-      const guild = await this.bot.base.guilds.fetch(this.id);
-      const member = await guild.members.fetch(userId);
-      member.kick();
-    } else {
-      await this.bot.base.banChatMember(this.id, Number(userId), {
-        until_date: Math.floor(Date.now() / 1000) + 1,
-      });
-    }
+    await this.bot.base.kickUser(userId, this.id, "No reason provided");
   }
 
   async fetch() {
-    if (this.bot.base instanceof Client) {
-      const guild = await this.bot.base.guilds.fetch(this.id);
-      this.name = guild.name;
-      this.iconUrl = guild.iconURL() || undefined;
-    } else {
-      const user = await this.bot.base.getChat(this.id);
-      this.name = user.first_name;
-      this.iconUrl = user.photo?.big_file_id;
-    }
+    const guild = await this.bot.base.getGuild(this.id);
+    this.name = guild.name;
+    this.iconUrl = guild.iconUrl;
 
     this.bot.cache.set(this.id, this);
+    return this;
   }
 }
