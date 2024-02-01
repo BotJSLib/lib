@@ -9,6 +9,8 @@ import { DiscordBase } from "./wrapper/discord.js";
 import { TelegramBase } from "./wrapper/telegram.js";
 import { SlackBase } from "./wrapper/slack.js";
 import { SlackListener } from "./listeners/slack-listener.js";
+import { WhatsappBase } from "./wrapper/whatsapp.js";
+import { WhatsappListener } from "./listeners/whatsapp-listener.js";
 
 export class Bot {
   token: string;
@@ -29,6 +31,8 @@ export class Bot {
       case Platform.Slack:
         this.base = new SlackBase(this, options);
         break;
+      case Platform.Whatsapp:
+        this.base = new WhatsappBase(this, token, options);
     }
   }
 
@@ -65,6 +69,9 @@ export class Bot {
     if (this.base instanceof SlackBase) {
       listener = new SlackListener(this);
     }
+    if (this.base instanceof WhatsappBase) {
+      listener = new WhatsappListener(this);
+    }
 
     if (!listener) {
       throw new Error("Platform not supported");
@@ -97,4 +104,5 @@ export enum Platform {
   Discord = "discord",
   Telegram = "telegram",
   Slack = "slack",
+  Whatsapp = "whatsapp",
 }

@@ -1,6 +1,6 @@
-import { Listener } from "./base-listener";
-import { Bot } from "../bot";
-import { Base } from "../wrapper/base";
+import { Listener } from "./base-listener.js";
+import { Bot } from "../bot.js";
+import { Base } from "../wrapper/base.js";
 
 export class SlackListener implements Listener {
   private bot: Bot;
