@@ -11,6 +11,8 @@ import { SlackBase } from "./wrapper/slack.js";
 import { SlackListener } from "./listeners/slack-listener.js";
 import { WhatsappBase } from "./wrapper/whatsapp.js";
 import { WhatsappListener } from "./listeners/whatsapp-listener.js";
+import { TwitchBase } from "./wrapper/twitch.js";
+import { TwitchListener } from "./listeners/twitch-listener.js";
 
 export class Bot {
   token: string;
@@ -33,6 +35,10 @@ export class Bot {
         break;
       case Platform.Whatsapp:
         this.base = new WhatsappBase(this, token, options);
+        break;
+      case Platform.Twitch:
+        this.base = new TwitchBase(this, token, options);
+        break;
     }
   }
 
@@ -60,17 +66,23 @@ export class Bot {
 
   async loadEvents() {
     let listener: Listener | null = null;
-    if (this.base instanceof DiscordBase) {
-      listener = new DiscordListener(this);
-    }
-    if (this.base instanceof TelegramBase) {
-      listener = new TelegramListener(this);
-    }
-    if (this.base instanceof SlackBase) {
-      listener = new SlackListener(this);
-    }
-    if (this.base instanceof WhatsappBase) {
-      listener = new WhatsappListener(this);
+    
+    switch (true) {
+      case this.base instanceof DiscordBase:
+        listener = new DiscordListener(this);
+        break;
+      case this.base instanceof TelegramBase:
+        listener = new TelegramListener(this);
+        break;
+      case this.base instanceof SlackBase:
+        listener = new SlackListener(this);
+        break;
+      case this.base instanceof WhatsappBase:
+        listener = new WhatsappListener(this);
+        break;
+      case this.base instanceof TwitchBase:
+        listener = new TwitchListener(this);
+        break;
     }
 
     if (!listener) {
@@ -105,4 +117,5 @@ export enum Platform {
   Telegram = "telegram",
   Slack = "slack",
   Whatsapp = "whatsapp",
+  Twitch = "twitch",
 }

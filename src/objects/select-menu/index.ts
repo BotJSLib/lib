@@ -1,4 +1,2 @@
-// created from 'create-ts-index'
-
-export * from './menu';
-export * from './option';
+export * from "./menu.js";
+export * from "./option.js";
