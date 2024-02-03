@@ -13,6 +13,8 @@ import { WhatsappBase } from "./wrapper/whatsapp.js";
 import { WhatsappListener } from "./listeners/whatsapp-listener.js";
 import { TwitchBase } from "./wrapper/twitch.js";
 import { TwitchListener } from "./listeners/twitch-listener.js";
+import { RedditBase } from "./wrapper/reddit.js";
+import { RedditListener } from "./listeners/reddit-listener.js";
 
 export class Bot {
   token: string;
@@ -38,6 +40,9 @@ export class Bot {
         break;
       case Platform.Twitch:
         this.base = new TwitchBase(this, token, options);
+        break;
+      case Platform.Reddit:
+        this.base = new RedditBase(this, options);
         break;
     }
   }
@@ -66,7 +71,7 @@ export class Bot {
 
   async loadEvents() {
     let listener: Listener | null = null;
-    
+
     switch (true) {
       case this.base instanceof DiscordBase:
         listener = new DiscordListener(this);
@@ -83,25 +88,28 @@ export class Bot {
       case this.base instanceof TwitchBase:
         listener = new TwitchListener(this);
         break;
+      case this.base instanceof RedditBase:
+        listener = new RedditListener(this);
+        break;
     }
 
     if (!listener) {
       throw new Error("Platform not supported");
     }
 
-    MetadataStorage.getInstance().events.forEach((fun, event) => {
+    MetadataStorage.getInstance().events.forEach((fun: any, event) => {
       switch (event) {
         case "join":
-          fun.forEach((f) => listener!.registerMemberAdd(f));
+          fun.forEach((f: any) => listener!.registerMemberAdd(f));
           break;
         case "leave":
-          fun.forEach((f) => listener!.registerMemberRemove(f));
+          fun.forEach((f: any) => listener!.registerMemberRemove(f));
           break;
         case "message-edit":
-          fun.forEach((f) => listener!.registerMessageUpdate(f));
+          fun.forEach((f: any) => listener!.registerMessageUpdate(f));
           break;
         case "message":
-          fun.forEach((f) => listener!.registerMessageCreate(f));
+          fun.forEach((f: any) => listener!.registerMessageCreate(f));
           break;
       }
     });
@@ -118,4 +126,5 @@ export enum Platform {
   Slack = "slack",
   Whatsapp = "whatsapp",
   Twitch = "twitch",
+  Reddit = "reddit",
 }

@@ -1,4 +1,7 @@
 import { Bot } from "../bot.js";
+import { Guild } from "../objects/guild.js";
+import { Message } from "../objects/message.js";
+import { User } from "../objects/user.js";
 import { Base } from "../wrapper/base.js";
 import { Listener } from "./base-listener.js";
 
@@ -11,15 +14,17 @@ export class WhatsappListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: Function): void {}
+  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {}
 
-  registerMemberRemove(fun: Function): void {}
+  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {}
 
-  registerMessageUpdate(fun: Function): void {
+  registerMessageUpdate(
+    fun: (user: User, oldContent: string, message: Message) => void
+  ): void {
     this.base.subscribe("message_update", fun);
   }
 
-  registerMessageCreate(fun: Function): void {
+  registerMessageCreate(fun: (user: User, message: Message) => void): void {
     this.base.subscribe("message", fun);
   }
 }

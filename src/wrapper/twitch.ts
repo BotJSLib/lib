@@ -4,12 +4,11 @@ import { MessageBuilder } from "../objects/message.js";
 import { User } from "../objects/user.js";
 import { MetadataStorage } from "../storage/metadata.js";
 import { Base } from "./base.js";
-import { Api, Chat, ChatEvents } from "twitch-js";
+import { Chat, ChatEvents } from "twitch-js";
 
 export class TwitchBase implements Base {
   token: string;
   client: Chat;
-  api: Api;
   bot: Bot;
   channels: string[] = [];
 
@@ -22,10 +21,6 @@ export class TwitchBase implements Base {
       log: {
         enabled: false,
       },
-    });
-    this.api = new Api({
-      clientId: options?.clientId,
-      token: token,
     });
     this.channels = options?.channels;
   }

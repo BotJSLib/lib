@@ -10,6 +10,21 @@ import { ButtonBuilder } from "./button.js";
 import { SelectMenuBuilder } from "./select-menu/menu.js";
 import { SelectMenuOption } from "./select-menu/option.js";
 import { KnownBlock } from "@slack/bolt";
+import { Guild } from "./guild.js";
+
+export class Message {
+  id: string;
+  guild?: Guild;
+  channel?: string;
+  content: string;
+
+  constructor(id: string, guild: Guild | null, content: string, channel?: string) {
+    this.id = id;
+    this.guild = guild ? guild : undefined;
+    this.content = content;
+    this.channel = channel;
+  }
+}
 
 export class MessageBuilder {
   content: string;

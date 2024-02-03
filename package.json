@@ -1,7 +1,7 @@
 {
   "name": "@michelo11/botjs",
   "private": false,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "BotJS",
   "license": "MIT",
   "type": "module",
@@ -50,6 +50,7 @@
     "node-telegram-bot-api": "^0.64.0",
     "node-typescript-compiler": "^4.0.0",
     "ora": "^8.0.1",
+    "snoowrap": "^1.23.0",
     "tmi.js": "^1.8.5",
     "tsx": "^4.7.0",
     "twilio": "^4.21.0",

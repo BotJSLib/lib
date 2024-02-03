@@ -2,7 +2,7 @@ import { Bot } from "../bot.js";
 import twilio from "twilio";
 import { Base } from "./base.js";
 import { Guild } from "../objects/guild.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 import { User } from "../objects/user.js";
 import express from "express";
 import { MetadataStorage } from "../storage/metadata.js";
@@ -14,7 +14,7 @@ export class WhatsappBase implements Base {
   bot: Bot;
   port: number;
   number: string;
-  listeners: Function[] = [];
+  listeners: ((user: User, message: Message) => void)[] = [];
 
   constructor(bot: Bot, token: string, options?: any) {
     this.token = token;
@@ -29,7 +29,7 @@ export class WhatsappBase implements Base {
       const message = req.body.Body;
       const user = this.bot.getUser(req.body.From);
       this.listeners.forEach((listener) => {
-        listener(user, message);
+        listener(user, new Message(message, null, message));
       });
     });
   }
@@ -38,13 +38,20 @@ export class WhatsappBase implements Base {
     this.server.listen(this.port);
   }
 
-  subscribe(event: string, callback: Function): void {
+  subscribe(
+    event: string,
+    callback: (
+      user: User,
+      oldContent: string | Message,
+      message?: Message
+    ) => void
+  ): void {
     if (event === "message") {
       this.listeners.push(callback);
     } else if (event === "message_update") {
-      this.listeners.push((user: User, message: string) => {
-        if (message.length === 0) {
-          callback(user, message, message);
+      this.listeners.push((user: User, message: Message) => {
+        if (message.content.length === 0) {
+          callback(user, message.content, message);
         }
       });
     }
@@ -56,10 +63,10 @@ export class WhatsappBase implements Base {
 
   async registerCommands(): Promise<void> {
     for (const command of MetadataStorage.getInstance().commands) {
-      this.listeners.push((user: User, message: string) => {
-        if (message.startsWith(command[0])) {
+      this.listeners.push((user: User, message: Message) => {
+        if (message.content.startsWith(command[0])) {
           const args = new Map<string, string>();
-          const split = message.split(" ");
+          const split = message.content.split(" ");
           split.shift();
           for (let i = 0; i < split.length; i++) {
             args.set(command[1].args[i]!.name, split[i]!);
@@ -71,8 +78,8 @@ export class WhatsappBase implements Base {
     }
 
     for (const button of MetadataStorage.getInstance().buttons) {
-      this.listeners.push((user: User, message: string) => {
-        if (message.startsWith(button[0])) {
+      this.listeners.push((user: User, message: Message) => {
+        if (message.content.startsWith(button[0])) {
           const response: MessageBuilder = button[1](user);
           if (response) user.send(response);
         }
