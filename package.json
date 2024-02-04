@@ -16,6 +16,15 @@
     "type": "git",
     "url": "https://github.com/BotJSLib/lib.git"
   },
+  "keywords": [
+    "bot",
+    "discord",
+    "slack",
+    "twitch",
+    "telegram",
+    "reddit",
+    "whatsapp"
+  ],
   "files": [
     "dist",
     "README.md",
