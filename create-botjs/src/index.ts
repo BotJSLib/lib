@@ -109,7 +109,8 @@ try {
   );
 }
 
+console.log(chalk.greenBright("✔ ") + chalk.bold(prefix + " Installing packages!"));
 execSync(`${packageManager.value} install`, {
   cwd: resolvedProjectPath,
-  stdio: "ignore",
+  stdio: "inherit",
 });
