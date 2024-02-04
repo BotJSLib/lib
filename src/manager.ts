@@ -76,16 +76,7 @@ export class BotManager {
 
   private async reloadDevFiles(dir: string) {
     for (const bot of this.bots) {
-      if (bot.base instanceof Client) {
-        bot.base.removeAllListeners();
-      }
-
-      if (bot.base instanceof TelegramBot) {
-        bot.base.removeAllListeners();
-        for (const command of MetadataStorage.getInstance().commands.values()) {
-          bot.base.removeTextListener(new RegExp(`^\/${command.name}$`));
-        }
-      }
+      bot.base.removeListeners();
     }
 
     MetadataStorage.getInstance().commands.clear();

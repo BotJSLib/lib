@@ -15,22 +15,26 @@ export class TwitchListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {}
+  registerMemberAdd(fun: (user: User, guild: Guild, bot: Bot) => void): void {}
 
-  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {}
-
-  registerMessageUpdate(
-    fun: (user: User, oldContent: string, message: Message) => void
+  registerMemberRemove(
+    fun: (user: User, guild: Guild, bot: Bot) => void
   ): void {}
 
-  registerMessageCreate(fun: (user: User, message: Message) => void): void {
+  registerMessageUpdate(
+    fun: (user: User, oldContent: string, message: Message, bot: Bot) => void
+  ): void {}
+
+  registerMessageCreate(
+    fun: (user: User, message: Message, bot: Bot) => void
+  ): void {
     this.base.subscribe(ChatEvents.ALL, async (message: any) => {
       if (!("message" in message)) return;
 
       const user = this.bot.getUser(message.username);
       const guild = this.bot.getGuild(message.channel);
 
-      fun(user, new Message(message.message, guild, message.message));
+      fun(user, new Message(message.message, guild, message.message), this.bot);
     });
   }
 }

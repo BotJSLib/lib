@@ -15,24 +15,24 @@ export class DiscordListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {
+  registerMemberAdd(fun: (user: User, guild: Guild, bot: Bot) => void): void {
     this.base.subscribe("guildMemberAdd", async (member: GuildMember) => {
       const user = this.bot.getUser(member.id);
       const guild = this.bot.getGuild(member.guild.id);
-      fun(user, guild);
+      fun(user, guild, this.bot);
     });
   }
 
-  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {
+  registerMemberRemove(fun: (user: User, guild: Guild, bot: Bot) => void): void {
     this.base.subscribe("guildMemberRemove", async (member: GuildMember) => {
       const user = this.bot.getUser(member.id);
       const guild = this.bot.getGuild(member.guild.id);
-      fun(user, guild);
+      fun(user, guild, this.bot);
     });
   }
 
   registerMessageUpdate(
-    fun: (user: User, oldContent: string, message: MessageObject) => void
+    fun: (user: User, oldContent: string, message: MessageObject, bot: Bot) => void
   ): void {
     this.base.subscribe(
       "messageUpdate",
@@ -42,19 +42,20 @@ export class DiscordListener implements Listener {
         fun(
           user,
           msg.content,
-          new MessageObject(newMsg.id, guild, newMsg.content, newMsg.channelId)
+          new MessageObject(newMsg.id, guild, newMsg.content, newMsg.channelId),
+          this.bot
         );
       }
     );
   }
 
   registerMessageCreate(
-    fun: (user: User, message: MessageObject) => void
+    fun: (user: User, message: MessageObject, bot: Bot) => void
   ): void {
     this.base.subscribe("messageCreate", async (msg: Message) => {
       const user = this.bot.getUser(msg.author.id);
       const guild = msg.guild ? this.bot.getGuild(msg.guild!.id) : null;
-      fun(user, new MessageObject(msg.id, guild, msg.content, msg.channelId));
+      fun(user, new MessageObject(msg.id, guild, msg.content, msg.channelId), this.bot);
     });
   }
 }

@@ -14,25 +14,27 @@ export class SlackListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {
+  registerMemberAdd(fun: (user: User, guild: Guild, bot: Bot) => void): void {
     this.base.subscribe("member_joined_channel", async (event: any) => {
       const user = this.bot.getUser(event.payload.user);
       const guild = this.bot.getGuild(event.payload.channel);
-      fun(user, guild);
+      fun(user, guild, this.bot);
     });
   }
 
-  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {
+  registerMemberRemove(
+    fun: (user: User, guild: Guild, bot: Bot) => void
+  ): void {
     this.base.subscribe("member_left_channel", async (event: any) => {
       const user = this.bot.getUser(event.payload.user);
       const guild = this.bot.getGuild(event.payload.channel);
 
-      fun(user, guild);
+      fun(user, guild, this.bot);
     });
   }
 
   registerMessageUpdate(
-    fun: (user: User, oldContent: string, message: Message) => void
+    fun: (user: User, oldContent: string, message: Message, bot: Bot) => void
   ): void {
     this.base.subscribe("message", async (event: any) => {
       if (event.payload.subtype === "message_changed") {
@@ -45,18 +47,19 @@ export class SlackListener implements Listener {
             event.payload.message.ts,
             guild,
             (event.payload.message as any).text
-          )
+          ),
+          this.bot
         );
       }
     });
   }
 
-  registerMessageCreate(fun: (user: User, message: Message) => void): void {
+  registerMessageCreate(fun: (user: User, message: Message, bot: Bot) => void): void {
     this.base.subscribe("message", async (event: any) => {
       if (!event.payload.subtype) {
         const user = this.bot.getUser(event.payload.user);
         const guild = this.bot.getGuild(event.payload.channel);
-        fun(user, new Message(event.payload.ts, guild, event.payload.text));
+        fun(user, new Message(event.payload.ts, guild, event.payload.text), this.bot);
       }
     });
   }

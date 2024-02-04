@@ -14,19 +14,19 @@ export class RedditListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {}
+  registerMemberAdd(fun: (user: User, guild: Guild, bot: Bot) => void): void {}
 
-  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {}
+  registerMemberRemove(fun: (user: User, guild: Guild, bot: Bot) => void): void {}
 
   registerMessageUpdate(
-    fun: (user: User, oldContent: string, message: Message) => void
+    fun: (user: User, oldContent: string, message: Message, bot: Bot) => void
   ): void {}
 
-  registerMessageCreate(fun: (user: User, message: Message) => void): void {
+  registerMessageCreate(fun: (user: User, message: Message, bot: Bot) => void): void {
     this.base.subscribe(
       "message",
       async (author: User, message: string, guild: Guild, channel: string) => {
-        fun(author, new Message(message, guild, message, channel));
+        fun(author, new Message(message, guild, message, channel), this.bot);
       }
     );
   }

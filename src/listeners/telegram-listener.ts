@@ -15,7 +15,7 @@ export class TelegramListener implements Listener {
     this.base = bot.base;
   }
 
-  registerMemberAdd(fun: (user: User, guild: Guild) => void): void {
+  registerMemberAdd(fun: (user: User, guild: Guild, bot: Bot) => void): void {
     this.base.subscribe(
       "new_chat_members",
       async (msg: TelegramBot.Message) => {
@@ -23,12 +23,12 @@ export class TelegramListener implements Listener {
           msg.from?.id.toString() || msg.chat.id.toString()
         );
         const guild = this.bot.getGuild(msg.chat.id.toString());
-        fun(user, guild);
+        fun(user, guild, this.bot);
       }
     );
   }
 
-  registerMemberRemove(fun: (user: User, guild: Guild) => void): void {
+  registerMemberRemove(fun: (user: User, guild: Guild, bot: Bot) => void): void {
     this.base.subscribe(
       "left_chat_member",
       async (msg: TelegramBot.Message) => {
@@ -36,13 +36,13 @@ export class TelegramListener implements Listener {
           msg.from?.id.toString() || msg.chat.id.toString()
         );
         const guild = this.bot.getGuild(msg.chat.id.toString());
-        fun(user, guild);
+        fun(user, guild, this.bot);
       }
     );
   }
 
   registerMessageUpdate(
-    fun: (user: User, oldContent: string, message: Message) => void
+    fun: (user: User, oldContent: string, message: Message, bot: Bot) => void
   ): void {
     this.base.subscribe("edited_message", async (msg: TelegramBot.Message) => {
       const user = this.bot.getUser(msg.from!.id.toString());
@@ -51,17 +51,18 @@ export class TelegramListener implements Listener {
       fun(
         user,
         msg.text!,
-        new Message(msg.message_id.toString(), guild, msg.text!)
+        new Message(msg.message_id.toString(), guild, msg.text!),
+        this.bot
       );
     });
   }
 
-  registerMessageCreate(fun: (user: User, message: Message) => void): void {
+  registerMessageCreate(fun: (user: User, message: Message, bot: Bot) => void): void {
     this.base.subscribe("message", async (msg: TelegramBot.Message) => {
       const user = this.bot.getUser(msg.from!.id.toString());
       const guild = this.bot.getGuild(msg.chat.id.toString());
 
-      fun(user, new Message(msg.message_id.toString(), guild, msg.text!));
+      fun(user, new Message(msg.message_id.toString(), guild, msg.text!), this.bot);
     });
   }
 }

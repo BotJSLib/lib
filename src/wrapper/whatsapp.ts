@@ -43,7 +43,8 @@ export class WhatsappBase implements Base {
     callback: (
       user: User,
       oldContent: string | Message,
-      message?: Message
+      message?: Message,
+      bot?: Bot
     ) => void
   ): void {
     if (event === "message") {
@@ -51,7 +52,7 @@ export class WhatsappBase implements Base {
     } else if (event === "message_update") {
       this.listeners.push((user: User, message: Message) => {
         if (message.content.length === 0) {
-          callback(user, message.content, message);
+          callback(user, message.content, message, this.bot);
         }
       });
     }

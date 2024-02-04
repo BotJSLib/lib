@@ -1,4 +1,4 @@
-import { Client, Interaction } from "discord.js";
+import { Interaction } from "discord.js";
 import { Bot } from "../bot.js";
 import { MetadataStorage } from "../storage/metadata.js";
 import { MessageBuilder } from "../objects/message.js";

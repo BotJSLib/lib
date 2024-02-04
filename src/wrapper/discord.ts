@@ -33,6 +33,7 @@ export class DiscordBase implements Base {
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.GuildModeration,
         IntentsBitField.Flags.MessageContent,
+        IntentsBitField.Flags.DirectMessages,
       ],
       partials: [Partials.Channel, Partials.Message],
     });
