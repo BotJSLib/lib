@@ -1,6 +1,6 @@
 import { User } from "../objects/user.js";
 import { Guild } from "../objects/guild.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 
 export interface Base {
   start(): Promise<void>;
@@ -18,4 +18,5 @@ export interface Base {
     message: MessageBuilder,
     guild?: string
   ): Promise<void>;
+  getHistory(channel: string, guild?: string): Promise<Message[]>;
 }

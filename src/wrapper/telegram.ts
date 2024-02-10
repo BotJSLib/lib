@@ -4,7 +4,7 @@ import { Guild } from "../objects/guild.js";
 import { User } from "../objects/user.js";
 import { Base } from "./base.js";
 import { MetadataStorage } from "../storage/metadata.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 
 export class TelegramBase implements Base {
   token: string;
@@ -113,5 +113,12 @@ export class TelegramBase implements Base {
     guild?: string | undefined
   ): Promise<void> {
     await this.client.sendMessage(id, message.content, message.toTelegram());
+  }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    return [];
   }
 }

@@ -1,8 +1,13 @@
-import { App, BlockElementAction, LogLevel, StaticSelectAction } from "@slack/bolt";
+import {
+  App,
+  BlockElementAction,
+  LogLevel,
+  StaticSelectAction,
+} from "@slack/bolt";
 import { Bot } from "../bot.js";
 import { Base } from "./base.js";
 import { MetadataStorage } from "../storage/metadata.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 import { Guild } from "../objects/guild.js";
 import { User } from "../objects/user.js";
 
@@ -75,7 +80,10 @@ export class SlackBase implements Base {
         await ack();
         const block = payload as StaticSelectAction;
         const user = this.bot.getUser(body.user.id);
-        const response: MessageBuilder = callback(user, block.selected_option!.value);
+        const response: MessageBuilder = callback(
+          user,
+          block.selected_option!.value
+        );
         if (response) await say(response.toSlack());
       });
     });
@@ -132,5 +140,24 @@ export class SlackBase implements Base {
       channel: id,
       ...message.toSlack(),
     });
+  }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    return this.client.client.conversations
+      .history({
+        channel: channel,
+      })
+      .then((data) => {
+        return data.messages!.map((message) => {
+          return new Message(
+            message.ts!,
+            this.bot.getGuild(guild!),
+            message.text!
+          );
+        });
+      });
   }
 }

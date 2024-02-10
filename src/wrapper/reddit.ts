@@ -3,7 +3,7 @@ import { Guild } from "../objects/guild.js";
 import { User } from "../objects/user.js";
 import { Base } from "./base.js";
 import { MetadataStorage } from "../storage/metadata.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 import snoowrap from "snoowrap";
 import { EventEmitter } from "node:events";
 
@@ -156,5 +156,24 @@ export class RedditBase implements Base {
     guild: string
   ): Promise<void> {
     this.client.getSubmission(id).reply(message.content);
+  }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    return this.client
+      .getSubmission(channel)
+      .fetch()
+      .then((data) => {
+        return data.comments.map((comment) => {
+          return new Message(
+            comment.id,
+            this.bot.getGuild(guild!),
+            comment.body,
+            channel
+          );
+        });
+      });
   }
 }

@@ -129,4 +129,20 @@ export class WhatsappBase implements Base {
       to: id,
     });
   }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    return this.client.messages
+      .list({
+        from: `whatsapp:${channel}`,
+        to: `whatsapp:${this.number}`,
+      })
+      .then((messages) => {
+        return messages.map((message) => {
+          return new Message(message.body, null, message.body);
+        });
+      });
+  }
 }

@@ -17,6 +17,10 @@ export class User {
     await this.bot.base.sendToUser(this.id, message);
   }
 
+  async getHistory() {
+    return this.bot.base.getHistory(this.id);
+  }
+
   async fetch() {
     const user = await this.bot.base.getUser(this.id);
     this.username = user.username;

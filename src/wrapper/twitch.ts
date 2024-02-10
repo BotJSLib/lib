@@ -1,6 +1,6 @@
 import { Bot } from "../bot.js";
 import { Guild } from "../objects/guild.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 import { User } from "../objects/user.js";
 import { MetadataStorage } from "../storage/metadata.js";
 import { Base } from "./base.js";
@@ -89,5 +89,12 @@ export class TwitchBase implements Base {
     guild?: string | undefined
   ): Promise<void> {
     await this.client.say(id, message.content);
+  }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    return [];
   }
 }

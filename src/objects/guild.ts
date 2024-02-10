@@ -28,6 +28,10 @@ export class Guild {
   async kick(userId: string) {
     await this.bot.base.kickUser(userId, this.id, "No reason provided");
   }
+  
+  async getHistory(channelId?: string) {
+    return await this.bot.base.getHistory(channelId || this.id, this.id);
+  }
 
   async fetch() {
     const guild = await this.bot.base.getGuild(this.id);

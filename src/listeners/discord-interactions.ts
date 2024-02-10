@@ -13,7 +13,7 @@ export async function handleCommandDiscord(bot: Bot) {
     interaction.options.data.forEach((arg) => {
       args.set(arg.name, arg.value as string);
     });
-    const response = MetadataStorage.getInstance()
+    const response = await MetadataStorage.getInstance()
       .commands.get(command)
       ?.callback(user, args);
 
@@ -29,7 +29,7 @@ export async function handleButtonDiscord(bot: Bot) {
 
     const user = bot.getUser(interaction.user.id);
     const button = interaction.customId;
-    const response: MessageBuilder = MetadataStorage.getInstance()
+    const response: MessageBuilder = await MetadataStorage.getInstance()
       .buttons.get(button)
       ?.call(user);
     if (response) {
@@ -45,7 +45,7 @@ export async function handleSelectMenuDiscord(bot: Bot) {
     const user = bot.getUser(interaction.user.id);
     const selectMenu = interaction.customId;
     const response: MessageBuilder =
-      MetadataStorage.getInstance().selectMenu.get(selectMenu)!(
+      await MetadataStorage.getInstance().selectMenu.get(selectMenu)!(
         user,
         interaction.values[0]
       );

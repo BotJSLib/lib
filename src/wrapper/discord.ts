@@ -17,7 +17,7 @@ import {
 } from "../listeners/discord-interactions.js";
 import { MetadataStorage } from "../storage/metadata.js";
 import { Bot } from "../bot.js";
-import { MessageBuilder } from "../objects/message.js";
+import { Message, MessageBuilder } from "../objects/message.js";
 
 export class DiscordBase implements Base {
   token: string;
@@ -123,5 +123,41 @@ export class DiscordBase implements Base {
     if (channel instanceof TextChannel) {
       await channel.send(message.toDiscord());
     }
+  }
+
+  async getHistory(
+    channel: string,
+    guild?: string | undefined
+  ): Promise<Message[]> {
+    if (guild) {
+      const botGuild = this.bot.getGuild(guild!);
+      const g = this.client.guilds.cache.get(guild!);
+      const c = g?.channels.cache.get(channel);
+      if (c instanceof TextChannel) {
+        return c.messages.fetch().then((messages) => {
+          return messages.map((m) => {
+            return new Message(m.id, botGuild, m.content, channel);
+          });
+        });
+      }
+      return [];
+    }
+
+    const user =
+      this.client.users.cache.get(channel) ||
+      (await this.client.users.fetch(channel));
+    if (user) {
+      if (!user.dmChannel) {
+        await user.createDM();
+      }
+      return (
+        user.dmChannel?.messages.fetch().then((messages) => {
+          return messages.map((m) => {
+            return new Message(m.id, null, m.content, channel);
+          });
+        }) || []
+      );
+    }
+    return [];
   }
 }
